@@ -1,0 +1,40 @@
+import { Connection } from "@solana/web3.js"
+import { TOKENS, TokenKey } from "./tokens"
+import { fetchDecimals } from "./mint"
+
+const decCache = new Map<string, number>()
+
+export async function getDecimals(conn: Connection, key: TokenKey) {
+  const mint = TOKENS[key].mint
+  if (TOKENS[key].decimals != null) return TOKENS[key].decimals!
+  if (decCache.has(mint)) return decCache.get(mint)!
+  const d = await fetchDecimals(conn, mint)
+  decCache.set(mint, d)
+  return d
+}
+
+export async function uiAmountToAtoms(
+  conn: Connection,
+  key: TokenKey,
+  uiAmount: string
+): Promise<bigint> {
+  const d = await getDecimals(conn, key)
+  const [intPart, fracPart = ""] = uiAmount.split(".")
+  const frac = (fracPart + "0".repeat(d)).slice(0, d)
+  const base = (BigInt(10) ** BigInt(d))
+  const whole = BigInt(intPart || "0") * base
+  const fracAtoms = BigInt(frac || "0")
+  return whole + fracAtoms
+}
+
+export async function atomsToUi(
+  conn: Connection,
+  key: TokenKey,
+  atoms: bigint
+): Promise<string> {
+  const d = await getDecimals(conn, key)
+  const base = (BigInt(10) ** BigInt(d))
+  const whole = atoms / base
+  const frac = (atoms % base).toString().padStart(d, "0").replace(/0+$/, "")
+  return frac ? `${whole}.${frac}` : `${whole}`
+}

@@ -1,0 +1,4 @@
+export async function saveVault(v: any) { await chrome.storage.local.set({ vault: v }) }
+export async function loadVault() { const r = await chrome.storage.local.get("vault"); return r.vault ?? null }
+export async function saveLockState(b:boolean){ await chrome.storage.local.set({ locked: b }) }
+export async function isLocked(){ const r=await chrome.storage.local.get("locked"); return !!r.locked }

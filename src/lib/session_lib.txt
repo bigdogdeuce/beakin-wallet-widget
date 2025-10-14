@@ -1,0 +1,23 @@
+import { Keypair, PublicKey } from "@solana/web3.js"
+import { unlock } from "./vault"
+import { loadVault } from "./storage"
+import { mnemonicToKeypair } from "./derive"
+
+let kp: Keypair | null = null
+
+export async function ensureUnlocked(passphrase: string) {
+  const v = await loadVault()
+  if(!v) throw new Error("No vault found")
+  const mnemonic = await unlock(passphrase, v)
+  const raw = mnemonicToKeypair(mnemonic)
+  kp = Keypair.fromSecretKey(raw.secretKey)
+  return kp
+}
+
+export function getKeypair(){
+  if(!kp) throw new Error("Wallet locked")
+  return kp
+}
+
+export function lock(){ kp = null }
+export function pubkey(): PublicKey { return getKeypair().publicKey }

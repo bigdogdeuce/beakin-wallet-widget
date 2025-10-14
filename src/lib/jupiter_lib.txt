@@ -1,0 +1,50 @@
+import { createJupiterApiClient } from "@jup-ag/api"
+import { Connection, VersionedTransaction } from "@solana/web3.js"
+
+const JUP = createJupiterApiClient({ basePath: "https://quote-api.jup.ag" })
+
+export async function getBestRoute(
+  inputMint: string,
+  outputMint: string,
+  inputAmountAtoms: string // string for API
+) {
+  const { data } = await JUP.quoteGet({
+    inputMint,
+    outputMint,
+    amount: inputAmountAtoms,
+    slippageBps: 50, // 0.5% default
+    onlyDirectRoutes: false,
+    asLegacyTransaction: true,
+    restrictIntermediateTokens: false,
+  })
+  return data?.[0] ?? null
+}
+
+export async function buildSwapTx(
+  route: any,
+  userPubkey: string
+) {
+  const { data } = await JUP.swapPost({
+    swapRequest: {
+      quoteResponse: route,
+      userPublicKey: userPubkey,
+      wrapAndUnwrapSol: true,
+      useSharedAccounts: true,
+      prioritizationFeeLamports: "auto",
+    }
+  })
+  return data // contains swapTransaction (base64)
+}
+
+export async function sendSwapTx(
+  connection: Connection,
+  base64Tx: string,
+  sign: (tx: VersionedTransaction) => Promise<void>
+) {
+  const txBytes = Buffer.from(base64Tx, "base64")
+  const tx = VersionedTransaction.deserialize(txBytes)
+  await sign(tx)
+  const sig = await connection.sendTransaction(tx, {skipPreflight:false})
+  const res = await connection.confirmTransaction(sig, "confirmed")
+  return { signature: sig, result: res }
+}

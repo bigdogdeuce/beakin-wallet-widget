@@ -1,0 +1,56 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>Jupiter Proxy Smoke Test</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <style>
+    body { font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif; margin: 24px; line-height: 1.4; }
+    button { padding: 8px 12px; border-radius: 8px; border: 1px solid #ddd; cursor: pointer; }
+    pre { background: #111; color: #0f0; padding: 12px; overflow: auto; border-radius: 8px; }
+    .row { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
+    .muted { color: #666; font-size: 14px; }
+  </style>
+</head>
+<body>
+  <h1>Jupiter Proxy Smoke Test</h1>
+
+  <div class="row">
+    <button id="btn-quote">Test Quote (1 SOL → USDC)</button>
+    <span class="muted">/api/jup/quote → lite-api.jup.ag</span>
+  </div>
+  <pre id="out-quote">—</pre>
+
+  <div class="row" style="margin-top:16px">
+    <button id="btn-price">Test Price (SOL, USDC)</button>
+    <span class="muted">/api/jup/price?ids=SOL,USDC</span>
+  </div>
+  <pre id="out-price">—</pre>
+
+<script>
+async function prettyFetch(url) {
+  const r = await fetch(url);
+  const text = await r.text();
+  let obj;
+  try { obj = JSON.parse(text); } catch { obj = text; }
+  return { status: r.status, json: obj };
+}
+
+document.getElementById('btn-quote').onclick = async () => {
+  const url = "/api/jup/quote"
+    + "?inputMint=So11111111111111111111111111111111111111112"
+    + "&outputMint=EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v"
+    + "&amount=100000000"
+    + "&slippageBps=50"
+    + "&restrictIntermediateTokens=true";
+  const res = await prettyFetch(url);
+  document.getElementById('out-quote').textContent = JSON.stringify(res, null, 2);
+};
+
+document.getElementById('btn-price').onclick = async () => {
+  const res = await prettyFetch("/api/jup/price?ids=SOL,USDC");
+  document.getElementById('out-price').textContent = JSON.stringify(res, null, 2);
+};
+</script>
+</body>
+</html>

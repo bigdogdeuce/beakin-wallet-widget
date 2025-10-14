@@ -1,0 +1,2 @@
+// Placeholder: later you can inject a provider that implements Solana Wallet Standard
+console.log("Beakin content script ready")

@@ -1,0 +1,26 @@
+import { useState } from "react"
+import * as bip39 from "bip39"
+import { makeVault } from "../../lib/vault"
+import { saveVault, saveLockState } from "../../lib/storage"
+
+export default function Onboarding({ onDone }:{onDone:()=>void}) {
+  const [pass, setPass] = useState("")
+  const [mn, setMn] = useState("")
+
+  return (
+    <div style={{padding:12}}>
+      <h3>Beakin • Setup</h3>
+      <button onClick={async ()=>{
+        const m = bip39.generateMnemonic(256)
+        setMn(m)
+      }}>Generate 24-word</button>
+      <textarea value={mn} onChange={e=>setMn(e.target.value)} rows={3} style={{width:"100%",marginTop:8}}/>
+      <input type="password" placeholder="New passphrase" value={pass} onChange={e=>setPass(e.target.value)} style={{width:"100%",marginTop:8}}/>
+      <button style={{marginTop:8,width:"100%"}} onClick={async ()=>{
+        const v = await makeVault(pass, mn.trim())
+        await saveVault(v); await saveLockState(false)
+        onDone()
+      }}>Save & Continue</button>
+    </div>
+  )
+}

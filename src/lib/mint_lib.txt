@@ -1,0 +1,11 @@
+import { Connection, PublicKey } from "@solana/web3.js"
+import { getMint } from "@solana/spl-token"
+
+export async function fetchDecimals(
+  connection: Connection,
+  mintStr: string
+): Promise<number> {
+  const mint = new PublicKey(mintStr)
+  const mintInfo = await getMint(connection, mint)
+  return mintInfo.decimals
+}

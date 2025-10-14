@@ -1,0 +1,40 @@
+const text = (s: string) => new TextEncoder().encode(s)
+const unt = (b: ArrayBuffer) => new Uint8Array(b)
+
+async function kdf(pass: string, salt: Uint8Array) {
+  const baseKey = await crypto.subtle.importKey("raw", text(pass), {name: "PBKDF2"}, false, ["deriveKey"])
+  return crypto.subtle.deriveKey(
+    {name: "PBKDF2", salt, iterations: 250_000, hash: "SHA-256"},
+    baseKey,
+    {name: "AES-GCM", length: 256},
+    false,
+    ["encrypt","decrypt"]
+  )
+}
+
+export type VaultData = { // stored in chrome.storage.local
+  saltB64: string
+  ivB64: string
+  cipherB64: string // contains the mnemonic string
+}
+
+export async function makeVault(passphrase: string, mnemonic: string): Promise<VaultData> {
+  const salt = crypto.getRandomValues(new Uint8Array(16))
+  const key = await kdf(passphrase, salt)
+  const iv = crypto.getRandomValues(new Uint8Array(12))
+  const cipher = await crypto.subtle.encrypt({name: "AES-GCM", iv}, key, text(mnemonic))
+  return {
+    saltB64: btoa(String.fromCharCode(...salt)),
+    ivB64: btoa(String.fromCharCode(...iv)),
+    cipherB64: btoa(String.fromCharCode(...unt(cipher)))
+  }
+}
+
+export async function unlock(passphrase: string, v: VaultData): Promise<string> {
+  const salt = Uint8Array.from(atob(v.saltB64), c=>c.charCodeAt(0))
+  const iv   = Uint8Array.from(atob(v.ivB64),  c=>c.charCodeAt(0))
+  const buf  = Uint8Array.from(atob(v.cipherB64), c=>c.charCodeAt(0)).buffer
+  const key = await kdf(passphrase, salt)
+  const plain = await crypto.subtle.decrypt({name:"AES-GCM", iv}, key, buf)
+  return new TextDecoder().decode(plain) // mnemonic
+}

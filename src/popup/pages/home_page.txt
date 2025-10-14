@@ -1,0 +1,32 @@
+import { useEffect, useState } from "react"
+import { pubkey } from "../../lib/session"
+import { conn, getSolBalance, getTokenBalance } from "../../lib/solana"
+import { TOKENS } from "../../lib/tokens"
+
+export default function Home(){
+  const [sol, setSol] = useState<number>(0)
+  const [shr, setShr] = useState<string>("0")
+  const [bkin, setBkin] = useState<string>("0")
+  const [addr, setAddr] = useState<string>("")
+
+  useEffect(()=> {
+    (async()=>{
+      const p = pubkey()
+      setAddr(p.toBase58())
+      setSol(await getSolBalance(p))
+      setShr(await getTokenBalance(p, TOKENS.SHRIK.mint))
+      setBkin(await getTokenBalance(p, TOKENS.BKIN.mint))
+    })()
+  }, [])
+
+  return (
+    <div style={{padding:12}}>
+      <div style={{fontSize:12,wordBreak:"break-all"}}>{addr}</div>
+      <h4>Balances</h4>
+      <div>SOL: {(sol/1_000_000_000).toFixed(6)}</div>
+      <div>SHRIK: {shr} atoms</div>
+      <div>BKIN: {bkin} atoms</div>
+      <small>UI formatting will use on-chain decimals via format helpers.</small>
+    </div>
+  )
+}
