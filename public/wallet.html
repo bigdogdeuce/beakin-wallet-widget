@@ -1,17 +1,33 @@
 <!doctype html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Beakin Wallet</title>
-    <style>
-      html,body{margin:0;padding:0;background:#0b0b0b}
-      body{min-height:100vh}
-    </style>
-  </head>
-  <body>
-    <div id="root"></div>
-    <!-- This loads a separate entry that mounts App+WalletProviders -->
-    <script type="module" src="/src/web/main.tsx"></script>
-  </body>
+<head>
+  <meta charset="utf-8" />
+  <meta
+    http-equiv="refresh"
+    content="0; url=/src/popup/index.html"
+  />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Beakin Wallet</title>
+  <style>
+    html,body{height:100%;margin:0;background:#000;color:#f2f3f5;font-family:system-ui,Arial}
+    .wrap{display:grid;place-items:center;height:100%}
+    .card{max-width:520px;width:92%;background:#111214;border:1px solid #2a2d33;border-radius:16px;padding:24px;text-align:center}
+    a{color:#ffd166}
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="card">
+      <h1>Redirecting…</h1>
+      <p>Taking you to the Beakin wallet UI.</p>
+      <p><a href="/src/popup/index.html">Continue</a></p>
+    </div>
+  </div>
+  <script>
+    // Preserve query & hash if present
+    var q = location.search || "";
+    var h = location.hash || "";
+    location.replace("/src/popup/index.html" + q + h);
+  </script>
+</body>
 </html>
