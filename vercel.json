@@ -1,0 +1,11 @@
+{
+  "headers": [
+    {
+      "source": "/(.*)",
+      "headers": [
+        { "key": "X-Frame-Options", "value": "ALLOW-FROM https://www.beakin.network" },
+        { "key": "Content-Security-Policy", "value": "frame-ancestors https://www.beakin.network;" }
+      ]
+    }
+  ]
+}
