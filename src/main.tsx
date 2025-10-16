@@ -1,3 +1,9 @@
+// Polyfills for browser (needed by web3/wallet libs)
+import { Buffer } from "buffer";
+import process from "process";
+(window as any).Buffer ??= Buffer;
+(window as any).process ??= { env: process.env ?? {} };
+
 // src/main.tsx
 import React from "react";
 import ReactDOM from "react-dom/client";

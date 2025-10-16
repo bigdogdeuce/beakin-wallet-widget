@@ -4,9 +4,13 @@ import { resolve } from "path";
 
 export default defineConfig({
   plugins: [react()],
+  define: {
+    "process.env": {}, // Prevents undefined process.env errors in browser
+  },
   resolve: {
     alias: {
-      "@": resolve(__dirname, "src"), // <-- enables "@/..."
+      "@": resolve(__dirname, "src"),  // Your existing alias
+      buffer: "buffer/",               // Polyfill Buffer for browser
     },
   },
   build: {
